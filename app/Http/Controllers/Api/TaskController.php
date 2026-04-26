@@ -6,89 +6,63 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class TaskController extends Controller
 {
-    /**
-     * GET /api/tasks
-     * Return all tasks ordered by newest first.
-     */
     public function index(): JsonResponse
     {
-        $tasks = Task::latest()->get();
+        $tasks = Cache::remember('tasks.index', 60, function () {
+            return Task::query()->latest()->get();
+        });
 
         return response()->json([
-            'data' => $tasks,
+            'items' => $tasks,
         ]);
     }
 
-    /**
-     * POST /api/tasks
-     * Create and persist a new task.
-     */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title'        => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'status'       => 'sometimes|in:todo,in_progress,done',
-            'album_number' => 'required|string|max:50',
+            'title' => ['required', 'string', 'max:200'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'in:todo,doing,done'],
+            'priority' => ['required', 'in:low,medium,high'],
         ]);
 
         $task = Task::create($validated);
 
-        return response()->json([
-            'message' => 'Task created successfully.',
-            'data'    => $task,
-        ], 201);
+        Cache::forget('tasks.index');
+
+        return response()->json($task, 201);
     }
 
-    /**
-     * GET /api/tasks/{id}
-     * Return a single task by ID. Returns 404 if not found.
-     */
-    public function show(int $id): JsonResponse
+    public function show(Task $task): JsonResponse
     {
-        $task = Task::findOrFail($id);
-
-        return response()->json([
-            'data' => $task,
-        ]);
+        return response()->json($task);
     }
 
-    /**
-     * PUT /api/tasks/{id}  — replace all fields
-     * PATCH /api/tasks/{id} — update only provided fields
-     * Both are handled by this method via 'sometimes' validation.
-     */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, Task $task): JsonResponse
     {
-        $task = Task::findOrFail($id);
-
         $validated = $request->validate([
-            'title'        => 'sometimes|required|string|max:255',
-            'description'  => 'nullable|string',
-            'status'       => 'sometimes|in:todo,in_progress,done',
-            'album_number' => 'sometimes|required|string|max:50',
+            'title' => ['sometimes', 'string', 'max:200'],
+            'description' => ['nullable', 'string'],
+            'status' => ['sometimes', 'in:todo,doing,done'],
+            'priority' => ['sometimes', 'in:low,medium,high'],
         ]);
 
         $task->update($validated);
 
-        return response()->json([
-            'message' => 'Task updated successfully.',
-            'data'    => $task->fresh(),
-        ]);
+        Cache::forget('tasks.index');
+
+        return response()->json($task);
     }
 
-    /**
-     * DELETE /api/tasks/{id}
-     * Remove a task from the database. Returns 204 No Content.
-     */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Task $task): JsonResponse
     {
-        $task = Task::findOrFail($id);
-
         $task->delete();
+
+        Cache::forget('tasks.index');
 
         return response()->json(null, 204);
     }

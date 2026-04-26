@@ -27,6 +27,18 @@ Laravel has the most extensive and thorough [documentation](https://laravel.com/
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
+## API Version
+
+Current version: `/api/78688/v1`
+
+## Status Codes
+
+- `200 OK` - successful read
+- `201 Created` - resource created
+- `204 No Content` - deleted
+- `404 Not Found` - missing resource
+- `422 Unprocessable Entity` - validation error
+
 ## Laravel Sponsors
 
 We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
