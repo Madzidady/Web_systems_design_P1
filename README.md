@@ -69,3 +69,16 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## URL Shortener Module
+
+The project now includes a simple URL shortener module.
+
+Current endpoints:
+
+POST /api/78688/v1/short-links
+GET /api/78688/v1/short-links
+GET /api/78688/v1/short-links/{id}
+GET /r/{code}
+
+The module uses SQLite for persistent storage, file-based cache for caching the list endpoint, and Base62 encoding for generating short codes from numeric database IDs.
